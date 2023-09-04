@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // Create a namespace object
+      const MyApp = {};
+
+      // Model data
+      MyApp.model = {
+        app: {
+          currentPage: "mainPage",
+        },
+
+        inputs: {
+          mainPage: {
+            title: "",
+            author: "",
+            genre: "",
+            year: "",
+            publisher: "",
+            dateAdded: "",
+          },
+        },
+
+        data: {
+          books: [],
+          bookIdCounter: 1,
+        },
+      };
+
+      // Function to format a date
+      MyApp.formatDate = function (date) {
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = String(date.getFullYear()).slice(-2);
+        return `${day}/${month}/${year}`;
+      };
+
+      // Function to view the main page
+      MyApp.viewMainPage = function () {
+        const app = document.getElementById("app");
+        let html = /*html*/ `
+    <div id="container">
+        <div id="headline">Bookshelf App</div>
+    
+        <div id="box" class="top">
+            <input type="text" id="title" oninput="MyApp.model.inputs.mainPage.title = this.value" placeholder="Title"></input>
+        </div>
+        <div id="box">
+            <input type="text" id="author" oninput="MyApp.model.inputs.mainPage.author = this.value" placeholder="Author"></input>
+        </div>
+        <div id="box">
+            <input type="text" id="genre" oninput="MyApp.model.inputs.mainPage.genre = this.value" placeholder="Genre"></input>
+        </div>
+        <div id="box">
+            <input type="text" id="year" oninput="MyApp.model.inputs.mainPage.year = this.value" placeholder="Year"></input>
+        </div>
+        <div id="box">
+            <input type="text" id="publisher" oninput="MyApp.model.inputs.mainPage.publisher = this.value" placeholder="Publisher"></input>
+        </div>
+    
+        <div id="buttons">
+        <button onclick="MyApp.addBook()">Add book</button>
+        <button onclick="MyApp.viewOtherPage()">See list</button>
+        </div>
+    </div>
+    `;
+        app.innerHTML = html;
+      };
+
+      // Function to view the other page
+      MyApp.viewOtherPage = function () {
+        const app = document.getElementById("app");
+        const books = MyApp.model.data.books;
+
+        const tableRows = books
+          .map(
+            (book) => `
+    <tr>
+      <td>${book.id}</td>
+      <td>${book.title}</td>
+      <td>${book.author}</td>
+      <td>${book.genre}</td>
+      <td>${book.year}</td>
+      <td>${book.publisher}</td>
+      <td>${book.dateAdded}</td>
+    </tr>
+  `
+          )
+          .join("");
+
+        const html = /*html*/ `
+    <div id="container">
+      <div id="headline">List of books</div>
+      <table id="books-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Genre</th>
+            <th>Year</th>
+            <th>Publisher</th>
+            <th>Date Added (dd/mm/yy)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+      <div id="buttons">
+        <button class="back-to-main-btn" onclick="MyApp.goToMainPage()">Back to main page</button>
+        <button class="back-to-main-btn" onclick="MyApp.deleteBook()">Delete book</button>
+      </div>
+    </div>
+  `;
+        app.innerHTML = html;
+      };
+
+      // Function to add a book
+      MyApp.addBook = function () {
+        const currentDate = new Date();
+        const formattedDate = MyApp.formatDate(currentDate);
+
+        const newBook = {
+          id: MyApp.model.data.bookIdCounter,
+          title: MyApp.model.inputs.mainPage.title,
+          author: MyApp.model.inputs.mainPage.author,
+          genre: MyApp.model.inputs.mainPage.genre,
+          year: MyApp.model.inputs.mainPage.year,
+          publisher: MyApp.model.inputs.mainPage.publisher,
+          dateAdded: formattedDate,
+        };
+
+        if (
+          newBook.id.toString().trim() === "" ||
+          newBook.title.toString().trim() === "" ||
+          newBook.author.toString().trim() === "" ||
+          newBook.genre.toString().trim() === "" ||
+          newBook.year.toString().trim() === "" ||
+          newBook.publisher.toString().trim() === ""
+        )
+          return;
+
+        MyApp.model.data.books.push(newBook);
+
+        MyApp.model.data.bookIdCounter++;
+
+        MyApp.model.inputs.mainPage.title = title.value = "";
+        MyApp.model.inputs.mainPage.author = author.value = "";
+        MyApp.model.inputs.mainPage.genre = genre.value = "";
+        MyApp.model.inputs.mainPage.year = year.value = "";
+        MyApp.model.inputs.mainPage.publisher = publisher.value = "";
+
+        alert(`Book added with ID ${newBook.id}.`);
+      };
+
+      // Function to go to the main page
+      MyApp.goToMainPage = function () {
+        MyApp.model.app.currentPage = "mainPage";
+        MyApp.viewMainPage();
+      };
+
+      // Function to delete a book
+      MyApp.deleteBook = function () {
+        if (model.data.books.length == 0) return;
+        let bookToDelete = prompt("ID of book to delete: ");
+
+        if (bookToDelete == null) return;
+        const bookToDeleteIndex = model.data.books.findIndex(
+          (book) => book.id === parseInt(bookToDelete)
+        );
+
+        if (bookToDeleteIndex !== -1) {
+          const deletedBookId = model.data.books[bookToDeleteIndex].id;
+          model.data.books.splice(bookToDeleteIndex, 1);
+          alert(`Book with ID ${deletedBookId} deleted.`);
+          MyApp.viewOtherPage();
+        }
+      };
+
+      // Function to initialize the view
+      MyApp.view = function () {
+        if (MyApp.model.app.currentPage === "mainPage") {
+          MyApp.viewMainPage();
+        } else if (MyApp.model.app.currentPage === "otherPage") {
+          MyApp.viewOtherPage();
+        }
+      };
+
+      // Initialize the view
+      MyApp.view();
+    </script>
+  </body>
+</html>
