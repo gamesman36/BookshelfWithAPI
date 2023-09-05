@@ -202,7 +202,7 @@
       };
 
       // Function to add a book
-      MyApp.addBook = function () {
+      MyApp.addBook = async function () {
         const currentDate = new Date();
         const formattedDate = MyApp.formatDate(currentDate);
 
@@ -236,6 +236,8 @@
         MyApp.model.inputs.mainPage.year = year.value = "";
         MyApp.model.inputs.mainPage.publisher = publisher.value = "";
 
+        const response = await axios.post("/bookshelf", newBook);
+        getData();
         alert(`Book added with ID ${newBook.id}.`);
       };
 
