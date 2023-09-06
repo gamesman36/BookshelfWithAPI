@@ -13,6 +13,21 @@ app.MapPost("/bookshelf", (Book book) =>
     books.Add(book);
     SaveToFile(books);
 });
+app.MapDelete("/bookshelf/{id}", (HttpContext context, int id) =>
+{
+    var books = GetAllBooks().ToList();
+    var bookToRemove = books.FirstOrDefault(book => book.Id == id);
+    if (bookToRemove != null)
+    {
+        books.Remove(bookToRemove);
+        SaveToFile(books);
+        context.Response.StatusCode = StatusCodes.Status204NoContent;
+    }
+    else
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+    }
+});
 
 app.UseStaticFiles();
 app.Run();

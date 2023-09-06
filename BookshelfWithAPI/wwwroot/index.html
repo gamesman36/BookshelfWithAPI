@@ -264,22 +264,33 @@
         MyApp.viewMainPage();
       };
 
-      // Function to delete a book
-      MyApp.deleteBook = function () {
-        if (model.data.books.length == 0) return;
-        let bookToDelete = prompt("ID of book to delete: ");
+      MyApp.deleteBook = async function () {
+          if (MyApp.model.data.books.length === 0) return;
 
-        if (bookToDelete == null) return;
-        const bookToDeleteIndex = model.data.books.findIndex(
-          (book) => book.id === parseInt(bookToDelete)
-        );
+          let bookToDelete = prompt("ID of book to delete: ");
 
-        if (bookToDeleteIndex !== -1) {
-          const deletedBookId = model.data.books[bookToDeleteIndex].id;
-          model.data.books.splice(bookToDeleteIndex, 1);
-          alert(`Book with ID ${deletedBookId} deleted.`);
-          MyApp.viewOtherPage();
-        }
+          if (bookToDelete === null) return;
+
+          // Send a DELETE request to the server to delete the book by ID
+          try {
+              const response = await axios.delete(`/bookshelf/${bookToDelete}`);
+              if (response.status === 204) {
+                  // Remove the deleted book from the frontend data
+                  const indexToDelete = MyApp.model.data.books.findIndex(book => book.id === parseInt(bookToDelete));
+                  if (indexToDelete !== -1) {
+                      MyApp.model.data.books.splice(indexToDelete, 1);
+                  }
+                  // Refresh the view
+                  MyApp.viewOtherPage();
+                  alert(`Book with ID ${bookToDelete} deleted.`);
+              } else if (response.status === 404) {
+                  alert(`Book with ID ${bookToDelete} not found.`);
+              } else {
+                  alert(`Error deleting book with ID ${bookToDelete}.`);
+              }
+          } catch (error) {
+              console.error("Error deleting book:", error);
+          }
       };
 
       // Function to initialize the view
