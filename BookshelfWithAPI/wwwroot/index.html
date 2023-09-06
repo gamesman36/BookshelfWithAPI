@@ -59,7 +59,7 @@
             border-collapse: collapse;
             width: 100%;
             border: 2px solid black;
-            background-color: lightgray;
+            background-color: white;
             color: black;
         }
 
@@ -117,8 +117,12 @@
 
       async function getData() {
           const response = await axios.get("/bookshelf");
-          MyApp.model.books = response.data;
+          MyApp.model.data.books = response.data;
+
+          // Find the maximum ID from the loaded data and set bookIdCounter accordingly
+          MyApp.model.data.bookIdCounter = Math.max(...MyApp.model.data.books.map(book => book.id), 0);
       }
+
 
       // Function to view the main page
       MyApp.viewMainPage = function () {
@@ -203,43 +207,56 @@
 
       // Function to add a book
       MyApp.addBook = async function () {
-        const currentDate = new Date();
-        const formattedDate = MyApp.formatDate(currentDate);
+          const currentDate = new Date();
+          const formattedDate = MyApp.formatDate(currentDate);
 
-        const newBook = {
-          id: MyApp.model.data.bookIdCounter,
-          title: MyApp.model.inputs.mainPage.title,
-          author: MyApp.model.inputs.mainPage.author,
-          genre: MyApp.model.inputs.mainPage.genre,
-          year: MyApp.model.inputs.mainPage.year,
-          publisher: MyApp.model.inputs.mainPage.publisher,
-          dateAdded: formattedDate,
-        };
+          // Increment the bookIdCounter for the next book
+          MyApp.model.data.bookIdCounter++;
 
-        if (
-          newBook.id.toString().trim() === "" ||
-          newBook.title.toString().trim() === "" ||
-          newBook.author.toString().trim() === "" ||
-          newBook.genre.toString().trim() === "" ||
-          newBook.year.toString().trim() === "" ||
-          newBook.publisher.toString().trim() === ""
-        )
-          return;
+          const newBook = {
+              id: MyApp.model.data.bookIdCounter, // Use the updated bookIdCounter as the ID
+              title: MyApp.model.inputs.mainPage.title,
+              author: MyApp.model.inputs.mainPage.author,
+              genre: MyApp.model.inputs.mainPage.genre,
+              year: MyApp.model.inputs.mainPage.year,
+              publisher: MyApp.model.inputs.mainPage.publisher,
+              dateAdded: formattedDate,
+          };
 
-        MyApp.model.data.books.push(newBook);
+          if (
+              newBook.title.trim() === "" ||
+              newBook.author.trim() === "" ||
+              newBook.genre.trim() === "" ||
+              newBook.year.trim() === "" ||
+              newBook.publisher.trim() === ""
+          )
+              return;
 
-        MyApp.model.data.bookIdCounter++;
+          MyApp.model.data.books.push(newBook);
 
-        MyApp.model.inputs.mainPage.title = title.value = "";
-        MyApp.model.inputs.mainPage.author = author.value = "";
-        MyApp.model.inputs.mainPage.genre = genre.value = "";
-        MyApp.model.inputs.mainPage.year = year.value = "";
-        MyApp.model.inputs.mainPage.publisher = publisher.value = "";
+          clearInputFields();
 
-        const response = await axios.post("/bookshelf", newBook);
-        getData();
-        alert(`Book added with ID ${newBook.id}.`);
+          // Save the new book to the server
+          const response = await axios.post("/bookshelf", newBook);
+          getData();
+
+          // Display the correct book ID in the alert message
+          alert(`Book added with ID ${MyApp.model.data.bookIdCounter}.`);
       };
+
+      function clearInputFields() {
+          const inputFields = [
+              "title",
+              "author",
+              "genre",
+              "year",
+              "publisher",
+          ];
+          inputFields.forEach(field => {
+              MyApp.model.inputs.mainPage[field] = "";
+              document.getElementById(field).value = "";
+          });
+      }
 
       // Function to go to the main page
       MyApp.goToMainPage = function () {
